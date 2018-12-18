@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 
 class Solution:
@@ -36,9 +37,7 @@ class Solution:
         return ret
 
     def reverse(self):
-        i, j = np.random.randint(0, self.dimension, 2)
-        while i == j:
-            i, j = np.random.randint(0, self.dimension, 2)
+        i, j = random.sample(range(self.dimension), 2)
         i, j = min([i, j]), max([i, j])
 
         # 0, ..., i-1, i, ..., j-1, j, ...
@@ -56,9 +55,7 @@ class Solution:
         return Solution(new_path, new_cost)
 
     def swap(self):
-        i, j, k = np.random.randint(0, self.dimension, 3)
-        while i == j or j == k or i == k:
-            i, j, k = np.random.randint(0, self.dimension, 3)
+        i, j, k = random.sample(range(self.dimension), 3)
         i, j, k = sorted([i, j, k])
 
         # 0, ..., i-1, i, ..., j-1, j, ..., k-1, k, ...
