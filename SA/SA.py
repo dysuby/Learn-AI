@@ -1,3 +1,4 @@
+from time import time
 import numpy as np
 from utils import read_tsp, genAnimation
 from Solution import Solution
@@ -7,6 +8,7 @@ class SA:
 
     def __init__(self, tsppath):
         self.nodes = read_tsp(tsppath)
+        self.s_set = []
 
     def run(self, tmin, ntimes, neighbor_size, T, T_ratio, n_rate):
         """
@@ -25,7 +27,7 @@ class SA:
         solution = Solution.genInitSolution(self.nodes)
         self.optimal = solution
 
-        s_set = [solution]
+        self.s_set = [solution]
         while T > tmin:
             for j in range(ntimes):
                 new_solution = solution.localsearch(neighbor_size)
@@ -35,7 +37,7 @@ class SA:
                     solution = new_solution
                     if solution.cost < self.optimal.cost:
                         self.optimal = solution
-                        s_set.append(solution)
+                        self.s_set.append(solution)
 
                 print('T: {} times: {}/{}: current: {} best: {}'.format(
                     T, j, ntimes, solution.cost, self.optimal.cost))
@@ -46,8 +48,12 @@ class SA:
         print('final path\n{}\ncost: {}'.format(
             self.optimal.path, self.optimal.cost))
 
-        genAnimation(s_set)
 
 
 if __name__ == '__main__':
-    SA('pr136.tsp').run(10, 1000, 150, 300, 0.98, 1.01)
+    sa = SA('pr136.tsp')
+    st = time()
+    sa.run(10, 10000, 1, 100, 0.95, 1)
+    et = time()
+    print('Cost time: {} mins'.format((et - st) / 60))
+    genAnimation(sa.s_set)

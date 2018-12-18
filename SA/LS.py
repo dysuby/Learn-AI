@@ -1,3 +1,4 @@
+from time import time
 import numpy as np
 from utils import read_tsp, genAnimation
 from Solution import Solution
@@ -16,12 +17,12 @@ class LS:
         """
         self.optimal = Solution.genInitSolution(self.nodes)
 
-        s_set = [self.optimal]
+        self.s_set = [self.optimal]
         for i in range(times):
             new_solution = self.optimal.localsearch(neighbor_size)
             if new_solution.cost < self.optimal.cost:
                 self.optimal = new_solution
-                s_set.append(self.optimal)
+                self.s_set.append(self.optimal)
 
             print('times {}/{}: current: {} best: {}'.format(
                 i, times, new_solution.cost, self.optimal.cost))
@@ -29,8 +30,12 @@ class LS:
         print('final path\n{}\ncost: {}'.format(
             self.optimal.path, self.optimal.cost))
 
-        genAnimation(s_set)
 
 
 if __name__ == '__main__':
-    LS('pr136.tsp').run(2000000, 10)
+    ls = LS('pr136.tsp')
+    st = time()
+    ls.run(200000, 1)
+    et = time()
+    print('Cost time: {} mins'.format((et - st) / 60))
+    genAnimation(ls.s_set)

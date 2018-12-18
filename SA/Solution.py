@@ -23,20 +23,15 @@ class Solution:
         self.cost = cost
         self.dimension = len(self.path)
 
-    def localsearch(self, neighbor_size, depth=1):
-        neighbors = self.getNeighbors(neighbor_size, depth)
+    def localsearch(self, neighbor_size):
+        neighbors = self.getNeighbors(neighbor_size)
         opt = min(neighbors, key=lambda s: s.cost)
         return opt
 
-    def getNeighbors(self, neighbor_size, depth):
-        if depth == 0:
-            return []
-
+    def getNeighbors(self, neighbor_size):
         ret = []
         for k in range(neighbor_size):
             ret = ret + [self.reverse(), self.swap()]
-            ret = ret + ret[-1].getNeighbors(neighbor_size, depth - 1) + \
-                ret[-2].getNeighbors(neighbor_size, depth - 1)
 
         return ret
 
