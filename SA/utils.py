@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
+TSP_PATH = 'test'
 
 def read_tsp(tsppath):
     """
@@ -10,7 +11,7 @@ def read_tsp(tsppath):
     @return - np.ndarray
     """
     SIZE = 1024
-    f = open(tsppath)
+    f = open('{}/{}'.format(TSP_PATH, tsppath))
     for i in range(6):
         f.readline(SIZE)
 
