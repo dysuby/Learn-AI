@@ -12,20 +12,22 @@ def read_tsp(tsppath):
     """
     SIZE = 1024
     f = open('{}/{}'.format(TSP_PATH, tsppath))
-    for i in range(6):
-        f.readline(SIZE)
+    while True:
+        s = f.readline(SIZE)
+        if s.find('NODE_COORD_SECTION') != -1:
+            break
 
-    ret = np.empty((0, 2), dtype=np.int32)
+    ret = []
     for data in f:
         if data.find('EOF') != -1:
             break
-        x, y = [int(s) for s in data.split()][1:]
-        ret = np.append(ret, [[x, y]], axis=0)
+        x, y = [float(s) for s in data.split()][1:]
+        ret.append([x, y])
 
-    return ret
+    return np.array(ret)
 
 
-def genAnimation(solutions):
+def genAnimation(solutions, nodes):
     """
     生成动画并保存 gif
 
@@ -34,18 +36,20 @@ def genAnimation(solutions):
     fig, ax = plt.subplots()
 
     container = []
+    i = 0
     for s in solutions:
         # 首尾相连
-        X = np.append([s.path[-1, 0]], s.path[:, 0])
-        Y = np.append([s.path[-1, 1]], s.path[:, 1])
+        X = np.append([nodes[s.path[-1], 0]], nodes[s.path, 0])
+        Y = np.append([nodes[s.path[-1], 1]], nodes[s.path, 1])
 
         current, = ax.plot(X, Y, '-bo')
 
         # 标出 cost
-        title = plt.text(0.5, 1.05, 'Cost {}'.format(s.cost),
+        title = plt.text(0.5, 1.05, 'times: {} Cost {}'.format(i, s.cost),
                          size=plt.rcParams['axes.titlesize'],
                          ha='center', va='top', transform=ax.transAxes)
         container.append([current, title])
+        i += 1
 
     ani = animation.ArtistAnimation(fig, container, blit=False, repeat=False)
 
