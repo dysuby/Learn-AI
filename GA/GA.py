@@ -14,26 +14,17 @@ class GA:
                 self.distances[i, j] = np.linalg.norm(self.nodes[i] - self.nodes[j])
             self.distances[i, i] = np.inf
 
-    # def fitness(self, generations):
-    #     fs = np.array([1 / s.cost for s in generations])
-    #     return fs
-
-    # def roulette(self, fs):
-    #     p = (fs / fs.sum()).cumsum()
-    #     pi = np.random.random()
-    #     return np.nonzero(pi < p)[0][0]
-        
     def tournament(self, gens, n):
         samples = random.sample(gens, n)
         return min(samples, key=lambda s: s.cost)
 
-    def run(self, gens_num, pop_size, pc, pm, k=5):
+    def run(self, gens_num, pop_size, pc, pm, k):
         population = []
         for i in range(pop_size):
             if i > pop_size / 3:
                 population.append(Solution.genInitSolution(self.distances, 'random'))
             else:
-                population.append(Solution.genInitSolution(self.distances, 'greedy'))
+                population.append(Solution.genInitSolution(self.distances, 'greedy').single_swap())
 
         self.s_set = [min(population, key=lambda s: s.cost)]
         self.opt = population[0]
@@ -72,7 +63,7 @@ def test(num):
     for i in range(num):
         ga = GA('ch130.tsp')
         st = time()
-        ga.run(5000, 50, 0.8, 0.4)
+        ga.run(5000, 50, 0.9, 0.5, 5)
         et = time()
         print('Cost time: {} mins'.format((et - st) / 60))
         genAnimation(ga.s_set, ga.nodes)

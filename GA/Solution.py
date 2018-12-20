@@ -2,6 +2,7 @@ import numpy as np
 import random
 from time import time
 
+
 class Solution:
     @staticmethod
     def genInitSolution(distances, t='random'):
@@ -11,7 +12,7 @@ class Solution:
             np.random.shuffle(s_index)
         else:
             s_index = Solution.greedy(distances)
-        
+
         # 计算初始解的代价
         cost = distances[s_index[:-1], s_index[1:]
                          ].sum() + distances[s_index[-1], s_index[0]]
@@ -36,7 +37,8 @@ class Solution:
                     nindex = (nindex + 1) if nindex != f1.dimension - 1 else 0
             new_path = np.array(new_path, dtype=np.int)
 
-            new_cost = f1.distances[new_path[:-1], new_path[1:]].sum() + f1.distances[new_path[-1], new_path[0]]
+            new_cost = f1.distances[new_path[:-1], new_path[1:]
+                                    ].sum() + f1.distances[new_path[-1], new_path[0]]
 
             ret.append(Solution(f1.distances, new_path, new_cost))
             f1, f2 = f2, f1     # 交換
@@ -67,7 +69,7 @@ class Solution:
         return opt
 
     def reverse(self):
-        i, j = random.sample(range(1, self.dimension), 2)
+        i, j = random.sample(range(0, self.dimension), 2)
         i, j = min([i, j]), max([i, j])
 
         # 0, ..., i-1, i, ..., j-1, j, ...
@@ -84,7 +86,7 @@ class Solution:
         return Solution(self.distances, new_path, new_cost)
 
     def swap(self):
-        i, j, k = random.sample(range(1, self.dimension), 3)
+        i, j, k = random.sample(range(0, self.dimension), 3)
         i, j, k = sorted([i, j, k])
 
         # 0, ..., i-1, i, ..., j-1, j, ..., k-1, k, ...
@@ -103,7 +105,7 @@ class Solution:
         return Solution(self.distances, new_path, new_cost)
 
     def single_swap(self):
-        i, j = random.sample(range(1, self.dimension - 1), 2)
+        i, j = random.sample(range(0, self.dimension), 2)
 
         # 0, ..., i, ..., j, ...
         # 交换得
@@ -112,12 +114,16 @@ class Solution:
         new_path[i], new_path[j] = new_path[j], new_path[i]
 
         new_cost = self.cost - self.distances[self.path[i], self.path[i - 1]]
-        new_cost -= self.distances[self.path[i], self.path[i + 1]]
+        new_cost -= self.distances[self.path[i],
+                                   self.path[(i + 1) if i + 1 != self.dimension else 0]]
         new_cost -= self.distances[self.path[j], self.path[j - 1]]
-        new_cost -= self.distances[self.path[j], self.path[j + 1]]
+        new_cost -= self.distances[self.path[j],
+                                   self.path[(j + 1) if j + 1 != self.dimension else 0]]
         new_cost += self.distances[self.path[j], self.path[i - 1]]
-        new_cost += self.distances[self.path[j], self.path[i + 1]]
+        new_cost += self.distances[self.path[j],
+                                   self.path[(i + 1) if i + 1 != self.dimension else 0]]
         new_cost += self.distances[self.path[i], self.path[j - 1]]
-        new_cost += self.distances[self.path[i], self.path[j + 1]]
+        new_cost += self.distances[self.path[i],
+                                   self.path[(j + 1) if j + 1 != self.dimension else 0]]
 
         return Solution(self.distances, new_path, new_cost)
