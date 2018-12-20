@@ -20,11 +20,12 @@ class GA:
 
     def run(self, gens_num, pop_size, pc, pm, k):
         population = []
+        greedy = Solution.genInitSolution(self.distances, 'greedy')
         for i in range(pop_size):
             if i > pop_size / 3:
                 population.append(Solution.genInitSolution(self.distances, 'random'))
             else:
-                population.append(Solution.genInitSolution(self.distances, 'greedy').single_swap())
+                population.append(greedy.localsearch())
 
         self.s_set = [min(population, key=lambda s: s.cost)]
         self.opt = population[0]
