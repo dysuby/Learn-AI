@@ -42,7 +42,7 @@ class Solution:
         return opt
 
     def reverse(self):
-        i, j = random.sample(range(1, self.dimension), 2)
+        i, j = random.sample(range(0, self.dimension), 2)
         i, j = min([i, j]), max([i, j])
 
         # 0, ..., i-1, i, ..., j-1, j, ...
@@ -59,7 +59,7 @@ class Solution:
         return Solution(self.distances, new_path, new_cost)
 
     def swap(self):
-        i, j, k = random.sample(range(1, self.dimension), 3)
+        i, j, k = random.sample(range(0, self.dimension), 3)
         i, j, k = sorted([i, j, k])
 
         # 0, ..., i-1, i, ..., j-1, j, ..., k-1, k, ...
@@ -78,7 +78,7 @@ class Solution:
         return Solution(self.distances, new_path, new_cost)
 
     def single_swap(self):
-        i, j = random.sample(range(1, self.dimension - 1), 2)
+        i, j = random.sample(range(0, self.dimension - 1), 2)
 
         # 0, ..., i, ..., j, ...
         # 交换得
@@ -87,12 +87,17 @@ class Solution:
         new_path[i], new_path[j] = new_path[j], new_path[i]
 
         new_cost = self.cost - self.distances[self.path[i], self.path[i - 1]]
-        new_cost -= self.distances[self.path[i], self.path[i + 1]]
+        new_cost -= self.distances[self.path[i],
+                                   self.path[(i + 1) if i + 1 != self.dimension else 0]]
         new_cost -= self.distances[self.path[j], self.path[j - 1]]
-        new_cost -= self.distances[self.path[j], self.path[j + 1]]
+        new_cost -= self.distances[self.path[j],
+                                   self.path[(j + 1) if j + 1 != self.dimension else 0]]
         new_cost += self.distances[self.path[j], self.path[i - 1]]
-        new_cost += self.distances[self.path[j], self.path[i + 1]]
+        new_cost += self.distances[self.path[j],
+                                   self.path[(i + 1) if i + 1 != self.dimension else 0]]
         new_cost += self.distances[self.path[i], self.path[j - 1]]
-        new_cost += self.distances[self.path[i], self.path[j + 1]]
+        new_cost += self.distances[self.path[i],
+                                   self.path[(j + 1) if j + 1 != self.dimension else 0]]
+
 
         return Solution(self.distances, new_path, new_cost)

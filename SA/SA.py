@@ -57,7 +57,7 @@ class SA:
 
 
 if __name__ == '__main__':
-    sa = SA('pr136.tsp')
+    sa = SA('ch130.tsp')
     st = time()
     sa.run(5, 5000, 100, 0.97, 1)
     et = time()

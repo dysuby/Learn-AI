@@ -45,7 +45,7 @@ class LS:
 
 
 if __name__ == '__main__':
-    ls = LS('pr136.tsp')
+    ls = LS('ch130.tsp')
     st = time()
     ls.run(200000)
     et = time()
