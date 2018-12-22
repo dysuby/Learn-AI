@@ -165,7 +165,7 @@ if __name__ == '__main__':
             print('error_rate: {}'.format(err))
             bp.save_predict()
     else:
-        print('--- Usage ---')
-        print('<train> --- begin to train')
+        print('---------------------- Usage ----------------------')
+        print('<train>    --- begin to train')
         print('<continue> --- load model and continue training')
-        print('<test> --- load model, predict test data and save')
+        print('<test>     --- load model, predict test data and save')
