@@ -138,10 +138,27 @@ class BP:
 
 
 if __name__ == '__main__':
-    if len(sys.argv) >= 2 and sys.argv[1] == 'train':
-        bp = BP()
-        bp.train(10000, 10, 0.5)
-        bp.save_model()
+    if len(sys.argv) >= 2:
+        try:
+            if sys.argv[1] == 'train':
+                print('Begin to train')
+                bp = BP()
+                bp.train(1000, 10, 0.5)
+            elif sys.argv[1] == 'continue':
+                print('Continue to train')
+                bp = BP(load=True)
+                bp.train(1000, 10, 0.5)
+        except KeyboardInterrupt:
+            raise
+        finally:
+            bp.save_model()
+        if sys.argv[1] == 'test':
+            bp = BP(load=True)
+            err = bp.test()
+            print('error_rate: {}'.format(err))
+            bp.save_predict()
     else:
-        bp = BP(load=True)
-        bp.test()
+        print('--- Usage ---')
+        print('<train> --- begin to train')
+        print('<continue> --- load model and continue training')
+        print('<test> --- load model, predict test data and save')
