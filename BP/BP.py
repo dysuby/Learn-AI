@@ -22,6 +22,7 @@ class BP:
         self.test_data = self.test_img.reshape((self.test_n, -1, 1))
         self.test_lbl = np.zeros((self.test_n, 10, 1))
         self.test_lbl[range(self.test_n), self.test_res, 0] = 1
+
         self.train_img, self.train_res = read('train')
         self.train_n = len(self.train_img)
         self.train_data = self.train_img.reshape((self.train_n, -1, 1))
@@ -43,75 +44,77 @@ class BP:
         for i in range(times):
             # 选取样本
             np.random.shuffle(idx)
-            sample_data =[self.train_data[k:k+sample_size] for k in range(0, self.train_n, sample_size)]
-            sample_lbl = [self.train_lbl[k:k+sample_size] for k in range(0, self.train_n, sample_size)]
-
+            sample_idx = [idx[k:k+sample_size] for k in range(0, self.train_n, sample_size)]
+            sample_data =[self.train_data[k] for k in sample_idx]
+            sample_lbl = [self.train_lbl[k] for k in sample_idx]
 
             for data, lbl in zip(sample_data, sample_lbl):
-                tridown_w = [np.zeros(w.shape) for w in self.weights]
-                tridown_b = [np.zeros(b.shape) for b in self.biases]
+                nabla_w = [np.zeros(w.shape) for w in self.weights]
+                nabla_b = [np.zeros(b.shape) for b in self.biases]
                 for x, y in zip(data, lbl):
                     delta_tw, delta_tb = self.backprop(x, y)
-                    tridown_w = [w + dw for w, dw in zip(tridown_w, delta_tw)]
-                    tridown_b = [b + db for b, db in zip(tridown_b, delta_tb)]
+                    nabla_w = [w + dw for w, dw in zip(nabla_w, delta_tw)]
+                    nabla_b = [b + db for b, db in zip(nabla_b, delta_tb)]
 
-                self.weights = [w - self.learn_rate / sample_size *
-                                tw for w, tw in zip(self.weights, tridown_w)]
-                self.biases = [b - self.learn_rate / sample_size *
-                            tb for b, tb in zip(self.biases, tridown_b)]
-
+                self.weights = [w + self.learn_rate / sample_size *
+                                tw for w, tw in zip(self.weights, nabla_w)]
+                self.biases = [b + self.learn_rate / sample_size *
+                               tb for b, tb in zip(self.biases, nabla_b)]
             err = self.test()
-            print('t: {} err_rate: {}'.format(i, err))
-
+            print('t: {} test err_rate: {}'.format(i, err))
+            if err < 0.01:
+                break
 
     def backprop(self, x, y):
         tridown_w = [np.zeros(w.shape) for w in self.weights]
         tridown_b = [np.zeros(b.shape) for b in self.biases]
-        alpha, z = x, x
+        alpha = x
         alphas, zs = [x], []
         for w, b in zip(self.weights, self.biases):
-            z = w.dot(alpha) + b
+            z = np.dot(w, alpha) + b
             zs.append(z)
-            alpha = self.sigmod(z)
+            alpha = self.sigmoid(z)
             alphas.append(alpha)
 
-        delta = self.sigmod_deriv(zs[-1]) * (alphas[-1] - y)
-        tridown_w[-1] = delta.dot(alphas[-2].T)
+        delta = (y - alphas[-1]) * self.sigmoid_deriv(zs[-1])
+        tridown_w[-1] = np.dot(delta, alphas[-2].transpose())
         tridown_b[-1] = delta
 
         for i in range(2, self.layers_num):
-            delta = self.sigmod_deriv(
-                zs[-i]) * self.weights[-i + 1].T.dot(delta)
-            tridown_w[-i] = delta * alphas[-i - 1].T
+            delta = np.dot(self.weights[-i+1].transpose(),
+                           delta) * self.sigmoid_deriv(zs[-i])
+            tridown_w[-i] = np.dot(delta, alphas[-i-1].transpose())
             tridown_b[-i] = delta
 
         return tridown_w, tridown_b
 
-    def predict(self):
-        def feedforward(a):
-            for w, b in zip(self.weights, self.biases):
-                a = self.sigmod(w.dot(a) + b)
-            return a
-        return [np.argmax(feedforward(x)) for x in self.test_data]
+    def feedforward(self, a):
+        for b, w in zip(self.biases, self.weights):
+            a = self.sigmoid(np.dot(w, a) + b)
+        return a
 
-    def sigmod(self, x):
+    def predict(self, data):
+        return [np.argmax(self.feedforward(x)) for x in data]
+
+    def sigmoid(self, x):
         return 1 / (1 + np.exp(-x))
 
-    def sigmod_deriv(self, x):
-        return self.sigmod(x) * (1 - self.sigmod(x))
+    def sigmoid_deriv(self, x):
+        return self.sigmoid(x) * (1 - self.sigmoid(x))
 
     def test(self):
-        pre = self.predict()
+        pre = self.predict(self.test_data)
         err = len([p for p in range(self.test_n) if pre[p]
-                   != self.train_lbl[p, 0]]) / self.test_n
+                   != self.test_res[p]]) / self.test_n
         return err
 
     def save_predict(self):
         idx = [0] * 10
-        pre = self.predict()
+        pre = self.predict(self.test_data)
         for i in range(self.test_n):
             print('saving result {}'.format(i))
-            imwrite('{}/{}_{}.png'.format(PREDICT_PATH, pre[i], idx[pre[i]]), self.test_img[i])
+            imwrite('{}/{}_{}.png'.format(PREDICT_PATH,
+                                          pre[i], idx[pre[i]]), self.test_img[i])
             idx[pre[i]] += 1
 
     def load_model(self):
@@ -150,14 +153,15 @@ if __name__ == '__main__':
             if sys.argv[1] == 'train':
                 print('Begin to train')
                 bp = BP()
-                bp.train(1000, 10, 0.5)
+                bp.train(1000, 100, 0.1)
             elif sys.argv[1] == 'continue':
                 print('Continue to train')
                 bp = BP(load=True)
-                bp.train(1000, 10, 0.5)
+                bp.train(1000, 100, 0.1)
         except KeyboardInterrupt:
             raise
         finally:
+            print('saving model')
             bp.save_model()
         if sys.argv[1] == 'test':
             bp = BP(load=True)
