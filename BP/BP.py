@@ -22,17 +22,16 @@ class BP:
         self.test_data = self.test_img.reshape((self.test_n, -1, 1))
         self.test_lbl = np.zeros((self.test_n, 10, 1))
         self.test_lbl[range(self.test_n), self.test_res, 0] = 1
+        self.train_img, self.train_res = read('train')
+        self.train_n = len(self.train_img)
+        self.train_data = self.train_img.reshape((self.train_n, -1, 1))
+        self.train_lbl = np.zeros((self.train_n, 10, 1))
+        self.train_lbl[range(self.train_n), self.train_res, 0] = 1
 
         # 预处理
         if load:
             self.load_model()
         else:
-            self.train_img, self.train_res = read('train')
-            self.train_n = len(self.train_img)
-            self.train_data = self.train_img.reshape((self.train_n, -1, 1))
-            self.train_lbl = np.zeros((self.train_n, 10, 1))
-            self.train_lbl[range(self.train_n), self.train_res, 0] = 1
-
             self.weights = [np.random.randn(y, x) for x, y in zip(
                 layer_sizes[:-1], layer_sizes[1:])]
             self.biases = [np.random.randn(y, 1) for y in layer_sizes[1:]]
@@ -40,27 +39,28 @@ class BP:
     def train(self, times, sample_size, learn_rate):
         self.learn_rate = learn_rate
 
+        idx = list(range(self.train_n))
         for i in range(times):
             # 选取样本
-            samples_idx = sample(range(self.train_n), sample_size)
-            sample_data = self.train_data[samples_idx]
-            sample_lbl = self.train_lbl[samples_idx]
+            np.random.shuffle(idx)
+            sample_data =[self.train_data[k:k+sample_size] for k in range(0, self.train_n, sample_size)]
+            sample_lbl = [self.train_lbl[k:k+sample_size] for k in range(0, self.train_n, sample_size)]
 
-            tridown_w = [np.zeros(w.shape) for w in self.weights]
-            tridown_b = [np.zeros(b.shape) for b in self.biases]
-            for x, y in zip(sample_data, sample_lbl):
-                delta_tw, delta_tb = self.backprop(x, y)
-                tridown_w = [w + dw for w, dw in zip(tridown_w, delta_tw)]
-                tridown_b = [b + db for b, db in zip(tridown_b, delta_tb)]
 
-            self.weights = [w - self.learn_rate / sample_size *
-                            tw for w, tw in zip(self.weights, tridown_w)]
-            self.biases = [b - self.learn_rate / sample_size *
-                           tb for b, tb in zip(self.biases, tridown_b)]
+            for data, lbl in zip(sample_data, sample_lbl):
+                tridown_w = [np.zeros(w.shape) for w in self.weights]
+                tridown_b = [np.zeros(b.shape) for b in self.biases]
+                for x, y in zip(data, lbl):
+                    delta_tw, delta_tb = self.backprop(x, y)
+                    tridown_w = [w + dw for w, dw in zip(tridown_w, delta_tw)]
+                    tridown_b = [b + db for b, db in zip(tridown_b, delta_tb)]
 
-            pre = self.predict()
-            err = len([p for p in range(self.test_n) if pre[p]
-                       != self.train_lbl[p, 0]]) / self.test_n
+                self.weights = [w - self.learn_rate / sample_size *
+                                tw for w, tw in zip(self.weights, tridown_w)]
+                self.biases = [b - self.learn_rate / sample_size *
+                            tb for b, tb in zip(self.biases, tridown_b)]
+
+            err = self.test()
             print('t: {} err_rate: {}'.format(i, err))
 
     def feedforward(self, a):
@@ -72,7 +72,7 @@ class BP:
         tridown_w = [np.zeros(w.shape) for w in self.weights]
         tridown_b = [np.zeros(b.shape) for b in self.biases]
         alpha, z = x, x
-        alphas, zs = [x], [x]
+        alphas, zs = [x], []
         for w, b in zip(self.weights, self.biases):
             z = w.dot(alpha) + b
             zs.append(z)
@@ -101,9 +101,16 @@ class BP:
         return self.sigmod(x) * (1 - self.sigmod(x))
 
     def test(self):
+        pre = self.predict()
+        err = len([p for p in range(self.test_n) if pre[p]
+                   != self.train_lbl[p, 0]]) / self.test_n
+        return err
+
+    def save_predict(self):
         idx = [0] * 10
         pre = self.predict()
         for i in range(self.test_n):
+            print('saving result {}'.format(i))
             imwrite('{}/{}_{}.png'.format(PREDICT_PATH, pre[i], idx[pre[i]]), self.test_img[i])
             idx[pre[i]] += 1
 
