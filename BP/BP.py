@@ -63,10 +63,6 @@ class BP:
             err = self.test()
             print('t: {} err_rate: {}'.format(i, err))
 
-    def feedforward(self, a):
-        for w, b in zip(self.weights, self.biases):
-            a = self.sigmod(w.dot(a) + b)
-        return a
 
     def backprop(self, x, y):
         tridown_w = [np.zeros(w.shape) for w in self.weights]
@@ -92,7 +88,11 @@ class BP:
         return tridown_w, tridown_b
 
     def predict(self):
-        return [np.argmax(self.feedforward(x)) for x in self.test_data]
+        def feedforward(a):
+            for w, b in zip(self.weights, self.biases):
+                a = self.sigmod(w.dot(a) + b)
+            return a
+        return [np.argmax(feedforward(x)) for x in self.test_data]
 
     def sigmod(self, x):
         return 1 / (1 + np.exp(-x))
