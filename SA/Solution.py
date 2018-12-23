@@ -37,9 +37,7 @@ class Solution:
         self.distances = distances
 
     def localsearch(self):
-        neighbors = [self.reverse(), self.swap(), self.single_swap()]
-        opt = min(neighbors, key=lambda s: s.cost)
-        return opt
+        return random.sample([self.reverse, self.single_swap, self.swap], 1)[0]()
 
     def reverse(self):
         i, j = random.sample(range(0, self.dimension), 2)
