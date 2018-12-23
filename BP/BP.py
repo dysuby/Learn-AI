@@ -149,6 +149,11 @@ class BP:
 
 if __name__ == '__main__':
     if len(sys.argv) >= 2:
+        if sys.argv[1] == 'test':
+            bp = BP(load=True)
+            err = bp.test()
+            print('error_rate: {}'.format(err))
+            bp.save_predict()
         try:
             if sys.argv[1] == 'train':
                 print('Begin to train')
@@ -159,15 +164,8 @@ if __name__ == '__main__':
                 bp = BP(load=True)
                 bp.train(1000, 100, 0.1)
         except KeyboardInterrupt:
-            raise
-        finally:
-            print('saving model')
             bp.save_model()
-        if sys.argv[1] == 'test':
-            bp = BP(load=True)
-            err = bp.test()
-            print('error_rate: {}'.format(err))
-            bp.save_predict()
+            raise
     else:
         print('---------------------- Usage ----------------------')
         print('<train>    --- begin to train')
