@@ -34,16 +34,19 @@ class SA:
         self.optimal = solution
 
         self.s_set = [solution]
+        self.current_cost = []
+        self.opt_cost = []
         while t > tmin:
             for j in range(ntimes):
                 new_solution = solution.localsearch()
                 delta = new_solution.cost - solution.cost
-
                 if delta <= 0 or np.random.random() < np.exp(-delta / t):
                     solution = new_solution
                     if solution.cost < self.optimal.cost:
                         self.optimal = solution
                         self.s_set.append(solution)
+                    self.current_cost.append(solution.cost)
+                    self.opt_cost.append(self.opt_cost)
 
                 print('T: {} times: {}/{}: current: {} best: {}'.format(
                     t, j, ntimes, solution.cost, self.optimal.cost))
@@ -59,7 +62,7 @@ class SA:
 if __name__ == '__main__':
     sa = SA('ch130.tsp')
     st = time()
-    sa.run(5, 5000, 100, 0.97, 1)
+    sa.run(1, 3000, 100, 0.97, 1)
     et = time()
     print('Cost time: {} mins'.format((et - st) / 60))
     genAnimation(sa.s_set, sa.nodes)
