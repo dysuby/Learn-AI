@@ -2,7 +2,6 @@ import sys
 import os
 import numpy as np
 from random import sample, shuffle
-from cv2 import imwrite
 
 from utils import read
 
@@ -44,8 +43,9 @@ class BP:
         for i in range(times):
             # 选取样本
             np.random.shuffle(idx)
-            sample_idx = [idx[k:k+sample_size] for k in range(0, self.train_n, sample_size)]
-            sample_data =[self.train_data[k] for k in sample_idx]
+            sample_idx = [idx[k:k+sample_size]
+                          for k in range(0, self.train_n, sample_size)]
+            sample_data = [self.train_data[k] for k in sample_idx]
             sample_lbl = [self.train_lbl[k] for k in sample_idx]
 
             for data, lbl in zip(sample_data, sample_lbl):
@@ -62,7 +62,7 @@ class BP:
                                tb for b, tb in zip(self.biases, nabla_b)]
             err = self.test()
             print('t: {} test err_rate: {}'.format(i, err))
-            if err < 0.01:
+            if err < 0.04:
                 break
 
     def backprop(self, x, y):
@@ -109,6 +109,7 @@ class BP:
         return err
 
     def save_predict(self):
+        from cv2 import imwrite
         idx = [0] * 10
         pre = self.predict(self.test_data)
         for i in range(self.test_n):
@@ -158,11 +159,13 @@ if __name__ == '__main__':
             if sys.argv[1] == 'train':
                 print('Begin to train')
                 bp = BP()
-                bp.train(1000, 100, 0.1)
+                bp.train(10000, 100, 0.1)
+                bp.save_model()
             elif sys.argv[1] == 'continue':
                 print('Continue to train')
                 bp = BP(load=True)
-                bp.train(1000, 100, 0.1)
+                bp.train(10000, 100, 0.1)
+                bp.save_model()
         except KeyboardInterrupt:
             bp.save_model()
             raise
