@@ -115,8 +115,9 @@ class AStar:
                         prev[son_idx] = idx
                         g_score[son_idx] = g_score[idx] + dist
                         f[son_idx] = g_score[son_idx] + h_score[son_idx]
-                if h_type == 1 and h_score[idx] > h_score[son_idx] + 1:
-                    print('Not satisfy h(ni）<= 1 + h(nj)')
+                # if self.puzzle_type == 8 and h_type == 1 and h_score[idx] > h_score[son_idx] + 1:
+                #     print('Not satisfy h(ni）<= 1 + h(nj)')
+                #     exit(1)
 
     def print_state(self, state):
         to_print = lambda num: num if num != 0 else ' '
@@ -130,7 +131,7 @@ def gen_random_state():
     return state
 
 if __name__ == '__main__':
-    a = AStar(puzzle_type=8)
+    a = AStar(puzzle_type=9)
     
     # 打乱
     state = list(range(9))
@@ -145,10 +146,11 @@ if __name__ == '__main__':
         a.print_state(o)
     print('-------------- path --------------')
     for p in path:
+        print('f(n): {}'.format(f[G.index(p)]))
         a.print_state(p)
     
-    print('-------------- node in open_table and path --------------')
-    for o in open_table:
-        if o in path:
-            a.print_state(o)
-            print('f(n): {}'.format(f[G.index(o)]))
+    # print('-------------- node in open_table and path --------------')
+    # for o in open_table:
+    #     if o in path:
+    #         a.print_state(o)
+    #         print('f(n): {}'.format(f[G.index(o)]))
