@@ -45,8 +45,6 @@ class SA:
                     if solution.cost < self.optimal.cost:
                         self.optimal = solution
                         self.s_set.append(solution)
-                    self.current_cost.append(solution.cost)
-                    self.opt_cost.append(self.opt_cost)
 
                 print('T: {} times: {}/{}: current: {} best: {}'.format(
                     t, j, ntimes, solution.cost, self.optimal.cost))
